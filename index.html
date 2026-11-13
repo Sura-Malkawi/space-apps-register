@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NASA Space Apps Amman – Register</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@900&family=Overpass:wght@300;400;700&display=swap">
+<style>
+:root{--deep:#07173F;--electric:#0042A6;--neon:#EAFE07;--red:#E43700;--yonder:#2E96F5;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--white);font-family:"Overpass","Segoe UI",Tahoma,Arial,sans-serif;font-size:18px;line-height:1.5;
+background:linear-gradient(135deg,var(--electric) 0%,#06307a 40%,var(--deep) 100%);background-color:var(--deep);display:flex;flex-direction:column;align-items:center;padding:28px 20px 40px}
+.logo{width:230px;max-width:60%;height:auto;margin-bottom:8px}
+.card{width:100%;max-width:520px;background:var(--deep);border-radius:16px;padding:32px 26px;text-align:center}
+h1{font-family:"Fira Sans","Arial Black",sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.05em;font-size:34px;line-height:1.2;margin:0 0 10px}
+.sub{font-size:22px;line-height:1.35;margin:0 0 22px}.sub span{display:block}.sub .r{color:var(--red)}
+label{display:block;font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:15px;margin-bottom:8px}
+input{width:100%;padding:14px 16px;border-radius:8px;border:2px solid var(--yonder);background:var(--white);color:var(--deep);font:400 18px "Overpass",sans-serif;text-align:center}
+input:focus{outline:3px solid var(--neon);outline-offset:2px}
+button{font:700 20px "Overpass",sans-serif;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;border:0;border-radius:8px;background:var(--neon);color:var(--deep);padding:14px 22px}
+#go{width:100%;margin-top:16px}
+button:disabled{opacity:.5;cursor:default}
+button:hover:not(:disabled){background:var(--white)}
+.link{background:none;color:var(--neon);padding:0;border-bottom:2px solid var(--neon);border-radius:0;font-size:16px;margin-top:18px}
+.link:hover:not(:disabled){background:none;color:var(--red);border-color:var(--red)}
+.msg{margin-top:16px;min-height:26px;font-weight:700}
+.msg.ok{color:var(--neon)}.msg.ok::before{content:"✓ "}.msg.err::before{content:"⚠ "}
+.panel{width:100%;max-width:520px;margin-top:20px;background:var(--white);color:var(--deep);border-radius:16px;padding:26px}
+.panel h2{font-family:"Fira Sans",sans-serif;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin:0 0 12px;font-size:22px}
+.panel .n{color:#4a5560;margin:0 0 14px}
+.panel ol{margin:0;padding-inline-start:26px;max-height:340px;overflow-y:auto}
+.panel li{padding:8px 0;border-bottom:1px solid #d6dbe3}
+.panel .row{display:flex;gap:10px}.panel .row input{border-color:#0960E1}.panel .row button{padding:14px 18px}
+.panel .link{color:#0960E1;border-color:#0960E1}
+.panel .msg.err{color:#b32b00}
+.foot{margin-top:22px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+</style>
+</head>
+<body>
+<img class="logo" alt="NASA Space Apps Challenge – Amman" src="logo.png">
+<main class="card">
+  <h1>Join the event</h1>
+  <p class="sub"><span class="r">Register your name</span><span>سجّل اسمك للدخول للإيفنت</span></p>
+  <label for="name">Full name / الاسم الكامل</label>
+  <input id="name" type="text" maxlength="80" autocomplete="name">
+  <button id="go">Register / تسجيل</button>
+  <div class="msg" id="msg" role="status"></div>
+</main>
+
+<div class="foot">NASA Space Apps Challenge · Amman</div>
+<button class="link" id="adminBtn">Admin</button>
+
+<section class="panel" id="panel" hidden>
+  <h2>Admin · الأدمن</h2>
+  <div id="login">
+    <label for="pw" style="color:#07173F">Password / كلمة السر</label>
+    <div class="row"><input id="pw" type="password" autocomplete="current-password"><button id="enter">Enter</button></div>
+    <div class="msg err" id="pmsg" role="status"></div>
+  </div>
+  <div id="data" hidden>
+    <p class="n"><span id="count">0</span> registered / مسجّل</p>
+    <ol id="list"></ol>
+    <button id="csv" style="margin-top:18px">Download CSV</button>
+  </div>
+</section>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+function say(el,t,c){el.textContent=t;el.className='msg '+(c||'')}
+
+$('go').onclick=async function(){
+  var n=$('name').value.trim();
+  if(n.length<2){say($('msg'),'Please enter your name / اكتب اسمك','err');return}
+  this.disabled=true;
+  try{
+    var r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})});
+    if(!r.ok)throw 0;
+    say($('msg'),'Registered successfully / تم التسجيل','ok');$('name').value='';
+  }catch(e){say($('msg'),'Something went wrong, try again / صار خطأ، جرّب مرة ثانية','err')}
+  this.disabled=false;
+};
+
+$('adminBtn').onclick=function(){$('panel').hidden=!$('panel').hidden};
+
+var rows=[];
+$('enter').onclick=async function(){
+  this.disabled=true;
+  try{
+    var r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('pw').value})});
+    if(r.status===401){say($('pmsg'),'Wrong password / كلمة السر غلط','err');this.disabled=false;return}
+    if(!r.ok)throw 0;
+    rows=(await r.json()).rows;
+    $('login').hidden=true;$('data').hidden=false;
+    var ol=$('list');ol.textContent='';
+    rows.forEach(function(x){var li=document.createElement('li');li.textContent=x.name;ol.appendChild(li)});
+    $('count').textContent=rows.length;
+  }catch(e){say($('pmsg'),'Something went wrong / صار خطأ','err')}
+  this.disabled=false;
+};
+$('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('enter').click()});
+
+$('csv').onclick=function(){
+  var csv='\ufeffName,Registered at\n'+rows.map(function(r){return '"'+String(r.name).replace(/"/g,'""')+'",'+(r.at||'')}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='registrations.csv';a.click();
+};
+</script>
+</body>
+</html>
